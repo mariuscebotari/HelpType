@@ -155,6 +155,6 @@ EMAIL_USE_TLS = True
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
 
 # Telegram Bot settings
-TELEGRAM_TOKEN = "8335656960:AAGQwZJmzqI-reCwR4cN2vc87iyuBOYJ10c"   # token
-TELEGRAM_CHAT_ID = "727779222"         # chat_id
+TELEGRAM_TOKEN = "..."   # token
+TELEGRAM_CHAT_ID = "..."         # chat_id
 
