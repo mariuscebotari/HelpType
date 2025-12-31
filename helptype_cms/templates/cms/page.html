@@ -1,0 +1,356 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Google fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{% static 'cms/css/vendors.css' %}">
+  <link rel="stylesheet" href="{% static 'cms/css/main.css' %}">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{% static 'cms/img/logo/small-logo-v2.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'cms/img/logo/small-logo-v2.png' %}">
+  <link rel="manifest" href="{% static 'cms/img/favicon/manifest.json' %}">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="{% static 'cms/img/logo/small-logo-v2.png' %}">
+  <meta name="theme-color" content="#ffffff">
+
+  {% comment %} Dynamic title / description / canonical / OG tags {% endcomment %}
+  <title>
+    {% if page %}{{ page.title }}{% elif page_blocks and page_blocks.0.title %}{{ page_blocks.0.title }}{% else %}{{ site_settings.site_name|default:"HelpType" }}{% endif %}
+  </title>
+
+  <meta name="description" content="{% if page_blocks and page_blocks.0.content %}{{ page_blocks.0.content|striptags|truncatechars:160 }}{% else %}{{ site_settings.description|default:'' }}{% endif %}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <!-- Open Graph -->
+  <meta property="og:locale" content="{{ LANGUAGE_CODE|default:'ro' }}">
+  <meta property="og:title" content="{% if page %}{{ page.title }}{% elif page_blocks and page_blocks.0.title %}{{ page_blocks.0.title }}{% else %}{{ site_settings.site_name|default:'HelpType' }}{% endif %}">
+  <meta property="og:description" content="{% if page_blocks and page_blocks.0.content %}{{ page_blocks.0.content|striptags|truncatechars:160 }}{% else %}{{ site_settings.description|default:'' }}{% endif %}">
+  <meta property="og:type" content="{% if '/blog/' in request.path %}article{% else %}website{% endif %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% if page_blocks and page_blocks.0.content and site_settings.default_image %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_settings.default_image }}">
+  {% elif site_settings.logo %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_settings.logo }}">
+  {% else %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'cms/img/logo/logoht-white.svg' %}">
+  {% endif %}
+
+
+  <!-- JSON-LD basic Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "{{ site_settings.site_name|default:'HelpType' }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'cms/img/logo/logoht-white.svg' %}"
+  }
+  </script>
+</head>
+
+<body class="preloader-visible {% block body_class %}{% endblock %}" data-barba="wrapper">
+
+  <!-- preloader start -->
+  <div class="preloader js-preloader">
+    <div class="preloader__bg"></div>
+    <div class="preloader__progress">
+      <div class="preloader__progress__inner"></div>
+      <img src="{% static 'cms/img/general/loader.svg' %}" alt="preloader image" class="preloader__img">
+    </div>
+  </div>
+  <!-- preloader end -->
+
+  <!-- barba container start -->
+  <div class="barba-container" data-barba="container">
+
+    <!-- to-top-button start -->
+    <div data-cursor class="backButton js-backButton">
+      <span class="backButton__bg"></span>
+      <div class="backButton__icon__wrap">
+        <i class="backButton__button js-top-button" data-feather="arrow-up"></i>
+      </div>
+    </div>
+    <!-- to-top-button end -->
+
+    <!-- HEADER START -->
+
+<header class="header -light -sticky-light js-header-light -classic js-header {% if 'blog' in request.path %}header--on-dark{% endif %}">
+  <div class="header__bar" style="display: flex; justify-content: space-between; align-items: center;">
+    
+    <!-- Logo -->
+    <div class="header__logo js-header-logo">
+      <a data-barba href="{% url 'home' %}">
+        <img data-barba class="header__logo__light" src="{% static 'cms/img/logo/logo.png' %}" alt="log">
+      </a>
+      <a data-barba href="{% url 'home' %}">
+        <img data-barba class="header__logo__dark" src="{% static 'cms/img/logo/logo.png' %}" alt="log">
+      </a>
+    </div>
+
+    <!-- Navigation buttons (desktop) -->
+    <div class="navClassic-wrap js-header-menu-classic">
+      <ul class="navClassic-list js-navClassic-list" style="display: flex; gap: 20px;">
+
+        {% get_current_language as LANGUAGE_CODE %}
+
+        {% for btn in buttons %}
+          <li>
+            <a data-barba href="/{{ LANGUAGE_CODE }}{{ btn.url }}{% if btn.url|slice:'-1' != '/' %}/{% endif %}"
+               data-btn-color="{{ btn.color|default:'#45a3d0' }}"
+               style="color: #45a3d0">
+                <i data-barba class="{{ btn.icon_class }}"></i>
+              {{ btn.name }}
+            </a>
+          </li>
+        {% endfor %}
+
+        <!-- Language dropdown -->
+        <li class="has-submenu">
+          <a class="navClassic-link button -underline" href="javascript:void(0)">
+            {% if LANGUAGE_CODE == 'en' %}
+              <img data-barba src="{% static 'cms/img/flags/en.svg' %}" alt="English" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;">
+            {% elif LANGUAGE_CODE == 'ro' %}
+              <img data-barba src="{% static 'cms/img/flags/ro.svg' %}" alt="Română" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;">
+            {% elif LANGUAGE_CODE == 'ru' %}
+              <img data-barba src="{% static 'cms/img/flags/ru.svg' %}" alt="Русский" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;">
+            {% endif %}
+            <i class="fa fa-chevron-down" style="margin-left:6px;"></i>
+          </a>
+
+          <ul class="nav-submenu">
+            <li>
+              {% with subpath=request.path|slice:'3:' %}
+              <a data-barba class="button -underline" href="{% if subpath == '/' %}/en/{% else %}/en/{{ subpath }}{% endif %}">
+                <img data-barba src="{% static 'cms/img/flags/en.svg' %}" alt="English" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:8px;">
+                EN
+              </a>
+              {% endwith %}
+            </li>
+            <li>
+              {% with subpath=request.path|slice:'3:' %}
+              <a data-barba class="button -underline" href="{% if subpath == '/' %}/ro/{% else %}/ro/{{ subpath }}{% endif %}">
+                <img data-barba src="{% static 'cms/img/flags/ro.svg' %}" alt="Română" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:8px;">
+                RO
+              </a>
+              {% endwith %}
+            </li>
+            <li>
+              {% with subpath=request.path|slice:'3:' %}
+              <a data-barba class="button -underline" href="{% if subpath == '/' %}/ru/{% else %}/ru/{{ subpath }}{% endif %}">
+                <img data-barba src="{% static 'cms/img/flags/ru.svg' %}" alt="Русский" style="width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:8px;">
+                РУ
+              </a>
+              {% endwith %}
+            </li>
+          </ul>
+        </li>
+
+      </ul>
+
+      <!-- Mobile menu toggle -->
+      <div class="header__menu__wrap overflow-hidden">
+        <div class="header__menu js-header-menu">
+          <button type="button" class="nav-button-open js-nav-open">
+            <i class="icon" data-feather="menu"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav class="nav js-nav">
+    <div class="nav__inner js-nav-inner">
+      <div class="nav__bg js-nav-bg"></div>
+      <div class="nav__container">
+        <div class="nav__header">
+          <button type="button" class="nav-button-back js-nav-back">
+            <i class="icon" data-feather="arrow-left-circle"></i>
+          </button>
+          <button type="button" class="nav-btn-close js-nav-close pointer-events-none">
+            <i class="icon" data-feather="x"></i>
+          </button>
+        </div>
+
+        <div class="nav__content">
+          <div class="nav__content__left">
+            <div class="navList__wrap">
+              <ul class="navList js-navList">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% for btn in buttons %}
+                  <li>
+                    <a data-barba href="/{{ LANGUAGE_CODE }}{{ btn.url }}{% if btn.url|slice:'-1' != '/' %}/{% endif %}"
+                       class="mobile-nav-btn">
+                       
+                       {% if btn.icon_class %}
+                         <i data-barba class="{{ btn.icon_class }}"></i>
+                       {% endif %}
+                       
+                       {{ btn.name }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+          <div class="nav__content__right">
+            <div class="nav__info">
+              <div class="nav__info__item js-navInfo-item">
+                <h5 class="text-sm tracking-none fw-500">{% trans "Contact Us" %}</h5>
+                <div class="nav__info__content text-lg text-white mt-16">
+                  <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
+                  <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+
+
+<!--   HEADER END -->
+
+    <main>
+      <!-- RENDER BLOCKS -->
+      {% for block in page_blocks %}
+        {{ block.content|safe }}
+      {% endfor %}
+    </main>
+
+    {% for post in blog_posts %}
+  <div class="admin-post">
+    <p>{{ post.content|truncatewords:30 }}</p>
+  </div>
+{% endfor %}
+
+<!-- footer start -->
+<footer class="footer -type-1 bg-dark-1">
+  <div class="container">
+
+    <div class="footer__top">
+      <div class="row y-gap-48 justify-content-between">
+
+        <!-- Logo -->
+        <div class="col-lg-auto col-sm-12">
+          <a data-barba href="{% url 'home' %}" class="footer__logo">
+            <img data-barba src="{% static 'cms/img/logo/logoht-white.svg' %}" alt="HelpType Logo" style="width:200px; height:auto;">
+          </a>
+        </div>
+
+        <!-- Studio Info -->
+        <div class="col-lg-3 col-sm-6">
+          <h4 class="text-xl fw-500 text-white">Studio</h4>
+          <div class="footer__content text-base text-light mt-16 sm:mt-12">
+            {% if site_settings.email %}
+              <p class="mt-8">{{ site_settings.email }}</p>
+            {% endif %}
+            {% if site_settings.phone %}
+              <p class="mt-8">{{ site_settings.phone }}</p>
+            {% endif %}
+            {% if site_settings.address %}
+              <p class="mt-8">{{ site_settings.address }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {% get_current_language as LANGUAGE_CODE %}
+        <!-- Links -->
+        <div class="col-lg-auto col-sm-4">
+          <h4 class="text-xl fw-500 text-white">{% trans "Links" %}</h4>
+          <div class="footer__content text-base text-light mt-16 sm:mt-12">
+            {% for btn in buttons %}
+              <div>
+                <a data-barba href="/{{ LANGUAGE_CODE }}{{ btn.url }}{% if btn.url|slice:'-1' != '/' %}/{% endif %}"
+                   class="button -underline mt-4 footer-button"
+                   style="--btn-color: {{ btn.color|default:'#fff' }}">
+
+                  {% if btn.icon_class %}
+                    <i data-barba class="{{ btn.icon_class }}"></i>
+                  {% endif %}
+                  
+                  {{ btn.name }}
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Social Media -->
+        <div class="col-lg-auto col-auto">
+          <h4 class="text-xl fw-500 text-white">{% trans "Follow us" %}</h4>
+          <div class="social -bordered mt-16 sm:mt-12">
+            {% if site_settings.twitter %}
+              <a class="social__item text-white border-light" href="{{ site_settings.twitter }}" target="_blank">
+                <i class="fa fa-twitter"></i>
+              </a>
+            {% endif %}
+            {% if site_settings.instagram %}
+              <a class="social__item text-white border-light" href="{{ site_settings.instagram }}" target="_blank">
+                <i class="fa fa-instagram"></i>
+              </a>
+            {% endif %}
+            {% if site_settings.youtube %}
+              <a class="social__item text-white border-light" href="{{ site_settings.youtube }}" target="_blank">
+                <i class="fa fa-youtube-play"></i>
+              </a>
+            {% endif %}
+            {% if site_settings.linkedin %}
+              <a class="social__item text-white border-light" href="{{ site_settings.linkedin }}" target="_blank">
+                <i class="fa fa-linkedin"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer__bottom -light">
+      <div class="row">
+        <div class="col">
+          <div class="footer__copyright">
+            <p class="text-light">@ 2025, HelpType. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</footer>
+<!-- footer end -->
+
+
+   </div>
+  <!-- barba container end -->
+
+  <!-- minimal cursor element, hidden -->
+  <div class="js-cursor" style="display:none;">
+    <div class="js-follower"></div>
+    <div class="js-label"></div>
+    <div class="js-icon"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="{% static 'cms/js/vendors.js' %}"></script>
+  <script src="{% static 'cms/js/main.js' %}"></script>
+  
+</body>
+</html>
